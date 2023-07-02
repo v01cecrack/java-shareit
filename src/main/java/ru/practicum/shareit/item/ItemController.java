@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import javassist.tools.rmi.ObjectNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -23,7 +22,7 @@ public class ItemController {
     }
 
     @PatchMapping(value = "/{itemId}")
-    public ItemDto editItem(@RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Integer userId,@PathVariable Integer itemId) {
+    public ItemDto editItem(@RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer itemId) {
         return itemService.editItem(itemDto, userId, itemId);
     }
 

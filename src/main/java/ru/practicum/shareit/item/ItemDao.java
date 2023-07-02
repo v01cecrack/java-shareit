@@ -1,10 +1,9 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 import ru.practicum.shareit.error.ObjectNotFoundException;
-import ru.practicum.shareit.error.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -20,15 +19,16 @@ import java.util.stream.Collectors;
 import static ru.practicum.shareit.item.dto.ItemMapper.toItem;
 
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class ItemDao {
-    //private final ItemMapper itemMapper;
     private final UserDao userDao;
     private Map<Integer, Item> itemMap = new HashMap<>();
 
     public ItemDto createItem(ItemDto itemDto, User user) {
         Item item = toItem(itemDto, user);
         itemMap.put(item.getId(), item);
+        log.info("Вещь: {} добавлена", item.getName());
         return itemDto;
     }
 
@@ -48,24 +48,27 @@ public class ItemDao {
         Item item = ItemMapper.toItem(itemDto, userDao.getUser(userId));
         itemMap.remove(item.getId());
         itemMap.put(item.getId(), item);
+        log.info("Вещь: {} обновлена", item.getName());
         return itemDto;
     }
 
     public ItemDto viewItem(Integer itemId) {
+        log.info("Просмотр вещи: {}", itemMap.get(itemId));
         ItemDto itemDto = ItemMapper.toItemDto(itemMap.get(itemId));
         return itemDto;
     }
 
     public List<Item> findAll() {
+        log.info("Текущее количество вещей: {}", itemMap.size());
         return new ArrayList<>(itemMap.values());
     }
 
     public List<Item> searchItems(String text) {
+        log.info("Поиск вещи по '{}'", text);
         return itemMap.values().stream()
                 .filter(Item::getAvailable)
                 .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) ||
                         item.getDescription().toLowerCase().contains(text.toLowerCase()))
                 .collect(Collectors.toList());
     }
-
 }

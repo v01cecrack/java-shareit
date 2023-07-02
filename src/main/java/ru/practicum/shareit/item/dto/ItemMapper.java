@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.dto;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserDao;
 
 @Service
 public class ItemMapper {

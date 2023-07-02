@@ -61,7 +61,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void validateItem(Integer userId, ItemDto itemDto) {
-        if (!(userDao.getUserMap().containsKey(userId)) ) {
+        if (!(userDao.getUserMap().containsKey(userId))) {
             throw new ObjectNotFoundException();
         }
         if ((itemDto.getAvailable() == false)) {
