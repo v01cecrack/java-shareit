@@ -1,7 +1,7 @@
 package ru.practicum.shareit.error;
 
-import lombok.AllArgsConstructor;
-
-@AllArgsConstructor
 public class ObjectNotFoundException extends RuntimeException {
+    public ObjectNotFoundException(String message) {
+        super(message);
+    }
 }

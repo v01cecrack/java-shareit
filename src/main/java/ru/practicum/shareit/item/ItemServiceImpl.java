@@ -16,19 +16,17 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private int id = 0;
+
     private final ItemDao itemDao;
     private final UserDao userDao;
 
     @Override
     public ItemDto addItem(ItemDto itemDto, Integer userId) {
         validateItem(userId, itemDto);
-        itemDto.setId(++id);
-        User user = userDao.getUserMap().get(userId);
+        User user = userDao.getUser(userId);
         itemDao.createItem(itemDto, user);
         return itemDto;
     }
-
 
     @Override
     public ItemDto editItem(ItemDto itemDto, Integer userId, Integer itemId) {
@@ -45,7 +43,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> getItems(Integer userId) {
         return itemDao.findAll().stream()
                 .filter(item -> item.getOwner().getId() == userId)
-                .map(item -> ItemMapper.toItemDto(item))
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -56,16 +54,16 @@ public class ItemServiceImpl implements ItemService {
         }
         return itemDao.searchItems(text)
                 .stream()
-                .map(item -> ItemMapper.toItemDto(item))
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
     private void validateItem(Integer userId, ItemDto itemDto) {
-        if (!(userDao.getUserMap().containsKey(userId))) {
-            throw new ObjectNotFoundException();
+        if ((userDao.getUser(userId)) == null) {
+            throw new ObjectNotFoundException("User is not found");
         }
-        if ((itemDto.getAvailable() == false)) {
-            throw new NotAvailableException();
+        if ((!itemDto.getAvailable())) {
+            throw new NotAvailableException("Not available item");
         }
     }
 

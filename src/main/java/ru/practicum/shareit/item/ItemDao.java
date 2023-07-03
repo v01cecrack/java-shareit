@@ -22,10 +22,12 @@ import static ru.practicum.shareit.item.dto.ItemMapper.toItem;
 @Slf4j
 @RequiredArgsConstructor
 public class ItemDao {
+    private int id = 0;
     private final UserDao userDao;
     private Map<Integer, Item> itemMap = new HashMap<>();
 
     public ItemDto createItem(ItemDto itemDto, User user) {
+        itemDto.setId(++id);
         Item item = toItem(itemDto, user);
         itemMap.put(item.getId(), item);
         log.info("Вещь: {} добавлена", item.getName());
@@ -34,7 +36,7 @@ public class ItemDao {
 
     public ItemDto updateItem(ItemDto itemDto, Integer userId) {
         if (!(itemMap.get(itemDto.getId()).getOwner().getId() == userId)) {
-            throw new ObjectNotFoundException();
+            throw new ObjectNotFoundException("User is not found");
         }
         if (itemDto.getName() == null) {
             itemDto.setName(itemMap.get(itemDto.getId()).getName());
@@ -46,7 +48,6 @@ public class ItemDao {
             itemDto.setAvailable(itemMap.get(itemDto.getId()).getAvailable());
         }
         Item item = ItemMapper.toItem(itemDto, userDao.getUser(userId));
-        itemMap.remove(item.getId());
         itemMap.put(item.getId(), item);
         log.info("Вещь: {} обновлена", item.getName());
         return itemDto;

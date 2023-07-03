@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -13,11 +12,12 @@ import java.util.Map;
 
 @Repository
 @Slf4j
-@Data
 public class UserDao {
+    private int id = 0;
     private Map<Integer, User> userMap = new HashMap<>();
 
     public UserDto createUser(UserDto userDto) {
+        userDto.setId(++id);
         User user = UserMapper.toUser(userDto);
         userMap.put(user.getId(), user);
         log.info("Пользователь: {} создан", user.getName());
@@ -49,7 +49,6 @@ public class UserDao {
             userDto.setName(userMap.get(userId).getName());
         }
         User user = UserMapper.toUser(userDto);
-        userMap.remove(userId);
         userMap.put(userId, user);
         log.info("Пользователь обновлен");
         return userDto;

@@ -13,12 +13,9 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserDao userDao;
 
-    private int id = 0;
-
     @Override
     public UserDto createUser(UserDto userDto) {
         validation(userDto);
-        userDto.setId(++id);
         return userDao.createUser(userDto);
     }
 
@@ -46,8 +43,8 @@ public class UserServiceImpl implements UserService {
     private void validation(UserDto userDto) {
         List<User> userList = userDao.getUsers();
         for (User user : userList) {
-            if (user.getEmail().contains(userDto.getEmail())) {
-                throw new ConflictException();
+            if (user.getEmail().equals(userDto.getEmail())) {
+                throw new ConflictException("Email already exist");
             }
         }
     }
@@ -59,7 +56,7 @@ public class UserServiceImpl implements UserService {
         List<User> userList = userDao.getUsers();
         for (User user : userList) {
             if (user.getEmail().contains(userDto.getEmail()) && user.getId() != userId) {
-                throw new ConflictException();
+                throw new ConflictException("User is not owner");
             }
         }
     }
