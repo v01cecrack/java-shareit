@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
         }
         List<User> userList = userDao.getUsers();
         for (User user : userList) {
-            if (user.getEmail().contains(userDto.getEmail()) && user.getId() != userId) {
+            if (user.getEmail().equals(userDto.getEmail()) && user.getId() != userId) {
                 throw new ConflictException("User is not owner");
             }
         }

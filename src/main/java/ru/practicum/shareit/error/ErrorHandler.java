@@ -12,28 +12,28 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(ValidationException e) {
-        log.error("Validation error");
-        return new ErrorResponse(e.getMessage(), "Validation error");
+        log.error("{}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse hadleObjectNotFoundException(ObjectNotFoundException e) {
-        log.error("User is not found");
-        return new ErrorResponse(e.getMessage(), e.getMessage());
+        log.error("{}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleNotAvailableException(NotAvailableException e) {
-        log.error("Item is not available now");
-        return new ErrorResponse(e.getMessage(), e.getMessage());
+        log.error("{}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConflictException(ConflictException e) {
-        log.error("Conflict");
-        return new ErrorResponse(e.getMessage(), e.getMessage());
+        log.error("{}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
     }
 }

@@ -7,7 +7,6 @@ import ru.practicum.shareit.error.ObjectNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDao;
 
 import java.util.ArrayList;
@@ -15,8 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static ru.practicum.shareit.item.dto.ItemMapper.toItem;
 
 @Repository
 @Slf4j
@@ -26,31 +23,29 @@ public class ItemDao {
     private final UserDao userDao;
     private Map<Integer, Item> itemMap = new HashMap<>();
 
-    public ItemDto createItem(ItemDto itemDto, User user) {
-        itemDto.setId(++id);
-        Item item = toItem(itemDto, user);
+    public Item createItem(Item item) {
+        item.setId(++id);
         itemMap.put(item.getId(), item);
         log.info("Вещь: {} добавлена", item.getName());
-        return itemDto;
+        return item;
     }
 
-    public ItemDto updateItem(ItemDto itemDto, Integer userId) {
-        if (!(itemMap.get(itemDto.getId()).getOwner().getId() == userId)) {
+    public Item updateItem(Item item, Integer userId) {
+        if (!(itemMap.get(item.getId()).getOwner().getId() == userId)) {
             throw new ObjectNotFoundException("User is not found");
         }
-        if (itemDto.getName() == null) {
-            itemDto.setName(itemMap.get(itemDto.getId()).getName());
+        if (item.getName() == null) {
+            item.setName(itemMap.get(item.getId()).getName());
         }
-        if (itemDto.getDescription() == null) {
-            itemDto.setDescription(itemMap.get(itemDto.getId()).getDescription());
+        if (item.getDescription() == null) {
+            item.setDescription(itemMap.get(item.getId()).getDescription());
         }
-        if (itemDto.getAvailable() == null) {
-            itemDto.setAvailable(itemMap.get(itemDto.getId()).getAvailable());
+        if (item.getAvailable() == null) {
+            item.setAvailable(itemMap.get(item.getId()).getAvailable());
         }
-        Item item = ItemMapper.toItem(itemDto, userDao.getUser(userId));
         itemMap.put(item.getId(), item);
         log.info("Вещь: {} обновлена", item.getName());
-        return itemDto;
+        return item;
     }
 
     public ItemDto viewItem(Integer itemId) {
@@ -70,6 +65,13 @@ public class ItemDao {
                 .filter(Item::getAvailable)
                 .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) ||
                         item.getDescription().toLowerCase().contains(text.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public List<ItemDto> getItems(Integer userId) {
+        return findAll().stream()
+                .filter(item -> item.getOwner().getId() == userId)
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 }
