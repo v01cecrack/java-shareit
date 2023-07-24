@@ -42,10 +42,10 @@ public class BookingServiceImpl implements BookingService {
         }
         Item item = optionalItem.get();
         if (!item.getAvailable()) {
-            throw new ValidationException("Данная вещь не доступна");
+            throw new ValidationException("Данная вещь недоступна");
         }
         if (item.getOwner().getId() == userId) {
-            throw new ObjectNotFoundException("Зачем самому себе брать вещь в аренду! :)");
+            throw new ObjectNotFoundException("Вы владелец этой вещи");
         }
         Booking booking = BookingMapper.toBooking(bookingDto, item);
         booking.setBooker(user);
