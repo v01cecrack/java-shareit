@@ -3,6 +3,8 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.error.ValidationException;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.Valid;
@@ -16,7 +18,7 @@ import java.util.List;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
-    private static final String HEADER = "X-Sharer-User-Id";
+    public static final String HEADER = "X-Sharer-User-Id";
     private final ItemService itemService;
 
     @PostMapping
@@ -32,9 +34,9 @@ public class ItemController {
     }
 
     @GetMapping(value = "/{itemId}")
-    public ItemDto viewItem(@PathVariable Integer itemId) {
+    public ItemDto viewItem(@PathVariable Integer itemId, @RequestHeader(HEADER) Integer userId) {
         log.info("Получен GET-запрос:/items/{itemId} на получение вещи по id = {}", itemId);
-        return itemService.viewItem(itemId);
+        return itemService.viewItem(itemId, userId);
     }
 
     @GetMapping
@@ -47,6 +49,17 @@ public class ItemController {
     public List<ItemDto> searchItems(@RequestParam String text) {
         log.info("Получен GET-запрос:/items/search на поиск вещи, название или описание которой, содержит слово {}", text);
         return itemService.searchItems(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@RequestHeader(HEADER) int userId, @RequestBody CommentDto commentDto,
+                                 @PathVariable int itemId) {
+        String text = commentDto.getText();
+        if (text.isEmpty()) {
+            throw new ValidationException("Поле text не может быть пустым!");
+        }
+        commentDto.setText(text);
+        return itemService.addComment(userId, itemId, commentDto);
     }
 
 }
