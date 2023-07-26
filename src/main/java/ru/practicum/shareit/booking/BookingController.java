@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.error.ValidationException;
 
+import javax.validation.Valid;
 import java.util.List;
 
 import static ru.practicum.shareit.item.ItemController.HEADER;
@@ -21,7 +22,7 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public BookingDto addBookingRequest(@RequestBody BookingDto bookingDto, @RequestHeader(HEADER) Integer userId) {
+    public BookingDto addBookingRequest(@Valid @RequestBody BookingDto bookingDto, @RequestHeader(HEADER) Integer userId) {
         log.info("Добавлен новый запрос: {}", bookingDto);
         return bookingService.createBooking(bookingDto, userId);
     }
@@ -40,18 +41,17 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getBookingList(@RequestParam(defaultValue = "ALL") String state, @RequestHeader(HEADER) Integer userId) {
-        State stateEnum;
-        try {
-            stateEnum = State.valueOf(state);
-
-        } catch (Exception ex) {
-            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
-        }
+        State stateEnum = getState(state);
         return bookingService.getBookingList(stateEnum, userId);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getBookingByItemOwner(@RequestParam(defaultValue = "ALL") String state, @RequestHeader(HEADER) Integer userId) {
+        State stateEnum = getState(state);
+        return bookingService.getBookingByItemOwner(userId, stateEnum);
+    }
+
+    private State getState(String state) {
         State stateEnum;
         try {
             stateEnum = State.valueOf(state);
@@ -59,6 +59,6 @@ public class BookingController {
         } catch (Exception ex) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return bookingService.getBookingByItemOwner(userId, stateEnum);
+        return stateEnum;
     }
 }

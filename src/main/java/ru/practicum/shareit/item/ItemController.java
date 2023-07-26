@@ -52,13 +52,8 @@ public class ItemController {
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentDto addComment(@RequestHeader(HEADER) int userId, @RequestBody CommentDto commentDto,
+    public CommentDto addComment(@RequestHeader(HEADER) int userId,@Valid @RequestBody CommentDto commentDto,
                                  @PathVariable int itemId) {
-        String text = commentDto.getText();
-        if (text.isEmpty()) {
-            throw new ValidationException("Поле text не может быть пустым!");
-        }
-        commentDto.setText(text);
         return itemService.addComment(userId, itemId, commentDto);
     }
 

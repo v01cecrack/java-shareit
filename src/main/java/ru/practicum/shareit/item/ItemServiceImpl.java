@@ -4,8 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
+import ru.practicum.shareit.booking.dao.BookingRepository;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
-import ru.practicum.shareit.booking.dto.BookingRepository;
 import ru.practicum.shareit.error.NotAvailableException;
 import ru.practicum.shareit.error.ObjectNotFoundException;
 import ru.practicum.shareit.error.ValidationException;
@@ -21,10 +22,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dao.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.item.dto.ItemMapper.toItem;
@@ -43,7 +41,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto addItem(ItemDto itemDto, Integer userId) {
         validateItem(userId, itemDto);
-        User user = userRepository.findById(userId).get();
+        User user = userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Пользователь не найден"));
         Item item = toItem(itemDto, user);
         itemRepository.save(item);
         itemDto = toItemDto(item);
@@ -53,7 +51,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto editItem(ItemDto itemDto, Integer userId, Integer itemId) {
         itemDto.setId(itemId);
-        Item oldItem = itemRepository.findById(itemId).get();
+        Item oldItem = itemRepository.findById(itemId).orElseThrow(() -> new ObjectNotFoundException("Вещь не найдена"));
         if (!(oldItem.getOwner().getId() == userId)) {
             throw new ObjectNotFoundException("User is not found");
         }
@@ -66,7 +64,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() == null) {
             itemDto.setAvailable(oldItem.getAvailable());
         }
-        Item item = toItem(itemDto, userRepository.findById(userId).get());
+        Item item = toItem(itemDto, userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Пользователь не найден")));
         itemRepository.save(item);
         return itemDto;
     }
@@ -87,27 +85,18 @@ public class ItemServiceImpl implements ItemService {
             var bookings = bookingRepository.findBookingByItem_IdAndStatus(item.getId(), Status.APPROVED);
 
             if (bookings.size() != 0) {
-                bookings = bookings.stream()
+                Optional<BookingDto> lastBookingDto = bookings.stream()
                         .sorted(Comparator.comparing(Booking::getStart).reversed())
-                        .collect(Collectors.toList());
-
-                for (Booking booking : bookings) {
-                    if (booking.getStart().isBefore(LocalDateTime.now())) {
-                        itemDto.setLastBooking(BookingMapper.toBookingDto(booking));
-                        break;
-                    }
-                }
-
-                bookings = bookings.stream()
+                        .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
+                        .map(BookingMapper::toBookingDto)
+                        .findFirst();
+                lastBookingDto.ifPresent(itemDto::setLastBooking);
+                Optional<BookingDto> nextBookingDto = bookings.stream()
                         .sorted(Comparator.comparing(Booking::getStart))
-                        .collect(Collectors.toList());
-
-                for (Booking booking : bookings) {
-                    if (booking.getStart().isAfter(LocalDateTime.now())) {
-                        itemDto.setNextBooking(BookingMapper.toBookingDto(booking));
-                        break;
-                    }
-                }
+                        .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
+                        .map(BookingMapper::toBookingDto)
+                        .findFirst();
+                nextBookingDto.ifPresent(itemDto::setNextBooking);
             }
         }
         return itemDto;
@@ -121,13 +110,16 @@ public class ItemServiceImpl implements ItemService {
         items = items.stream()
                 .sorted(Comparator.comparingInt(Item::getId))
                 .collect(Collectors.toList());
-
+        List<Booking> bookingsList = bookingRepository.findBookingByStatus(Status.APPROVED);
         for (Item item : items) {
             var itemDto = ItemMapper.toItemDto(item);
-
+            List<Booking> bookings = new ArrayList<>();
             if (userId == item.getOwner().getId()) {
-                var bookings = bookingRepository.findBookingByItem_IdAndStatus(item.getId(), Status.APPROVED);
-
+                for (Booking booking : bookingsList) {
+                    if (booking.getItem().getId() == item.getId()) {
+                        bookings.add(booking);
+                    }
+                }
                 if (bookings.size() > 0) {
                     bookings = bookings.stream()
                             .sorted(Comparator.comparing(Booking::getStart).reversed())
