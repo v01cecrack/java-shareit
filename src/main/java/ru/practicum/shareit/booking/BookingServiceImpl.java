@@ -44,6 +44,21 @@ public class BookingServiceImpl implements BookingService {
             if (booking.getStart() == bookingDto.getStart() || booking.getEnd() == bookingDto.getEnd()) {
                 throw new ValidationException("Данная вещь уже забронирована");
             }
+            if (bookingDto.getStart().isAfter(booking.getStart()) && bookingDto.getEnd().isBefore(booking.getEnd())) {
+                throw new ValidationException("Данная вещь уже забронирована");
+            }
+            if (bookingDto.getStart().isBefore(booking.getStart()) && bookingDto.getEnd().isAfter(booking.getEnd())) {
+                throw new ValidationException("Данная вещь уже забронирована");
+            }
+            if (bookingDto.getStart().isBefore(booking.getStart()) && bookingDto.getEnd().isAfter(booking.getStart())
+                    && bookingDto.getEnd().isBefore(booking.getEnd())) {
+                throw new ValidationException("Данная вещь уже забронирована");
+            }
+            if (bookingDto.getStart().isAfter(booking.getStart()) && bookingDto.getStart().isBefore(booking.getEnd())
+                    && bookingDto.getEnd().isAfter(booking.getEnd())) {
+                throw new ValidationException("Данная вещь уже забронирована");
+            }
+
         }
         Booking booking = BookingMapper.toBooking(bookingDto, item);
         booking.setBooker(user);

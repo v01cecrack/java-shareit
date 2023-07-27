@@ -84,20 +84,7 @@ public class ItemServiceImpl implements ItemService {
         if (userId == item.getOwner().getId()) {
             var bookings = bookingRepository.findBookingByItem_IdAndStatus(item.getId(), Status.APPROVED);
 
-            if (bookings.size() != 0) {
-                Optional<BookingDto> lastBookingDto = bookings.stream()
-                        .sorted(Comparator.comparing(Booking::getStart).reversed())
-                        .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
-                        .map(BookingMapper::toBookingDto)
-                        .findFirst();
-                lastBookingDto.ifPresent(itemDto::setLastBooking);
-                Optional<BookingDto> nextBookingDto = bookings.stream()
-                        .sorted(Comparator.comparing(Booking::getStart))
-                        .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
-                        .map(BookingMapper::toBookingDto)
-                        .findFirst();
-                nextBookingDto.ifPresent(itemDto::setNextBooking);
-            }
+            addLastNextBooking(itemDto, bookings);
         }
         return itemDto;
     }
@@ -120,29 +107,7 @@ public class ItemServiceImpl implements ItemService {
                         bookings.add(booking);
                     }
                 }
-                if (bookings.size() > 0) {
-                    bookings = bookings.stream()
-                            .sorted(Comparator.comparing(Booking::getStart).reversed())
-                            .collect(Collectors.toList());
-
-                    for (Booking booking : bookings) {
-                        if (booking.getStart().isBefore(LocalDateTime.now())
-
-                        ) {
-                            itemDto.setLastBooking(BookingMapper.toBookingDto(booking));
-                            break;
-                        }
-                    }
-                    bookings = bookings.stream()
-                            .sorted(Comparator.comparing(Booking::getStart))
-                            .collect(Collectors.toList());
-                    for (Booking booking : bookings) {
-                        if (booking.getStart().isAfter(LocalDateTime.now())) {
-                            itemDto.setNextBooking(BookingMapper.toBookingDto(booking));
-                            break;
-                        }
-                    }
-                }
+                addLastNextBooking(itemDto, bookings);
             }
 
             List<Comment> comments = commentRepository.findCommentsByItem_Id(item.getId());
@@ -155,6 +120,23 @@ public class ItemServiceImpl implements ItemService {
             itemDtos.add(itemDto);
         }
         return itemDtos;
+    }
+
+    private void addLastNextBooking(ItemDto itemDto, List<Booking> bookings) {
+        if (bookings.size() != 0) {
+            Optional<BookingDto> lastBookingDto = bookings.stream()
+                    .sorted(Comparator.comparing(Booking::getStart).reversed())
+                    .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
+                    .map(BookingMapper::toBookingDto)
+                    .findFirst();
+            lastBookingDto.ifPresent(itemDto::setLastBooking);
+            Optional<BookingDto> nextBookingDto = bookings.stream()
+                    .sorted(Comparator.comparing(Booking::getStart))
+                    .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
+                    .map(BookingMapper::toBookingDto)
+                    .findFirst();
+            nextBookingDto.ifPresent(itemDto::setNextBooking);
+        }
     }
 
     @Override
