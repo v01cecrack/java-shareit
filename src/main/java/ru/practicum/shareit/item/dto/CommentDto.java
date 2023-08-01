@@ -2,12 +2,12 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.*;
 
-import javax.validation.ValidationException;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

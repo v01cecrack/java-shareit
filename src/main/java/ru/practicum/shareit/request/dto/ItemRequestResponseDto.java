@@ -4,22 +4,17 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
-
-/**
- * TODO Sprint add-item-requests.
- */
+import java.util.List;
 
 @Getter
-@EqualsAndHashCode
 @Setter
+@EqualsAndHashCode
 @Builder
-public class ItemRequestDto {
+public class ItemRequestResponseDto {
     private Long id;
     private final String description;
-    private User requestor;
+    private List<ItemRequestResponseDtoItem> items;
     private LocalDateTime created;
-
 }

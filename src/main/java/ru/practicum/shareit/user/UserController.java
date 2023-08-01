@@ -2,6 +2,7 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -19,13 +20,14 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUser(@Valid @RequestBody UserDto userDto) {
         log.info("Получен POST-запрос: /users на создание пользователя: {}", userDto);
         return userService.createUser(userDto);
     }
 
     @GetMapping
-    public List<User> getUsers() {
+    public List<UserDto> getUsers() {
         log.info("Получен GET-запрос: /users на получение всех пользователей");
         return userService.getUsers();
     }
@@ -37,7 +39,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public User getUser(@PathVariable int userId) {
+    public UserDto getUser(@PathVariable int userId) {
         log.info("Получен GET-запрос: /users/{id} на получение пользователя с ID = {}", userId);
         return userService.getUser(userId);
     }
@@ -45,6 +47,7 @@ public class UserController {
     @PatchMapping("/{userId}")
     public UserDto updateUser(@PathVariable int userId, @RequestBody UserDto userDto) {
         log.info("Получен PATCH-запрос: /users/{id} на обновление пользователя с ID = {}", userId);
-        return userService.updateUser(userId, userDto);
+        userDto.setId(userId);
+        return userService.updateUser(userDto);
     }
 }
