@@ -23,14 +23,19 @@ import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dao.UserRepository;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.item.dto.ItemMapper.toItem;
 import static ru.practicum.shareit.item.dto.ItemMapper.toItemDto;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
@@ -47,11 +52,10 @@ public class ItemServiceImpl implements ItemService {
         User user = userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Пользователь не найден"));
         Item item = toItem(itemDto, user);
         if (itemDto.getRequestId() > 0) {
-            var request = itemRequestRepository.findById(itemDto.getRequestId());
-            if (request.isEmpty()) {
-                throw new ObjectNotFoundException("Такого запроса не существует!");
-            }
-            item.setRequest(request.get());
+            itemRequestRepository.findById(itemDto.getRequestId())
+                    .ifPresentOrElse(item::setRequest, () -> {
+                        throw new ObjectNotFoundException("Такого запроса не существует!");
+                    });
         }
         itemRepository.save(item);
         itemDto = toItemDto(item);
@@ -152,9 +156,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItems(String text, int from, int size) {
-        if (from < 0) {
-            throw new ValidationException("Отрицательное значение фром");
-        }
         int offset = from > 0 ? from / size : 0;
         PageRequest page = PageRequest.of(offset, size);
 

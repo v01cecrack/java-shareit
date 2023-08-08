@@ -16,17 +16,18 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.UserMapper;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
-//    private final Sort sort = Sort.by(Sort.Direction.DESC, "start");
 
     @Override
     public BookingDto createBooking(BookingDto bookingDto, Integer userId) {

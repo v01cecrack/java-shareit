@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.error.ObjectNotFoundException;
-import ru.practicum.shareit.error.ValidationException;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
@@ -32,15 +31,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto addItemRequest(int userId, ItemRequestDto itemRequestDto) {
-        if (itemRequestDto.getDescription() == null || itemRequestDto.getDescription().isEmpty()) {
-            throw new ValidationException("Поле не может быть пустым!");
-        }
-        var userOptional = userRepository.findById(userId);
-
-        if (userOptional.isEmpty()) {
-            throw new ObjectNotFoundException("Такого пользователя не существует!");
-        }
-        var user = userOptional.get();
+        var user = userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Такого пользователя не существует!"));
         ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestDto);
         itemRequest.setRequester(user);
         itemRequest = itemRequestRepository.save(itemRequest);
@@ -87,9 +78,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestResponseDto> getAllRequests(int userId, int from, int size) {
-        if (from < 0) {
-            throw new ValidationException("Отрицательное значение фром");
-        }
         int offset = from > 0 ? from / size : 0;
         PageRequest page = PageRequest.of(offset, size);
 
