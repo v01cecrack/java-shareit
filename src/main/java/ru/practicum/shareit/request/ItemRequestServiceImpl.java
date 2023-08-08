@@ -14,10 +14,7 @@ import ru.practicum.shareit.request.dto.ItemRequestResponseDto;
 import ru.practicum.shareit.user.dao.UserRepository;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,24 +36,49 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return ItemRequestMapper.toItemRequestDto(itemRequest);
     }
 
-
     @Override
     public List<ItemRequestResponseDto> getItemsRequests(int userId) {
-        userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Пользователь с id %d не найден"));
+        userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException(String.format("Пользователь с id %d не найден", userId)));
         var itemRequests = itemRequestRepository.findItemRequestsByRequesterId(userId);
         if (itemRequests.isEmpty()) {
             return Collections.emptyList();
         }
+
         List<Long> requestIds = itemRequests.stream()
                 .map(ItemRequest::getId)
                 .collect(Collectors.toList());
-        List<Item> itemList = itemRepository.findItemsByRequestIdIn(requestIds); // все вещи по запросу
+        List<Item> itemList = itemRepository.findItemsByRequestIdIn(requestIds);
 
-        List<ItemRequestResponseDto> result = itemRequests.stream()
+        Map<ItemRequestResponseDto, List<Item>> resultMap = new HashMap<>();
+
+        for (ItemRequestResponseDto dto : itemRequests.stream()
                 .map(ItemRequestMapper::toItemRequestResponseDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())) {
+            resultMap.put(dto, new ArrayList<>());
+        }
 
-        return getItemRequestResponseDtos(itemList, result);
+        return getItemRequestResponseDtos(itemList, resultMap);
+    }
+
+    private List<ItemRequestResponseDto> getItemRequestResponseDtos(List<Item> itemList, Map<ItemRequestResponseDto, List<Item>> resultMap) {
+        for (Item item : itemList) {
+            ItemRequestResponseDto dto = resultMap.keySet().stream()
+                    .filter(itemRequestResponseDto ->
+                            Objects.equals(item.getRequest().getId(), itemRequestResponseDto.getId()))
+                    .findFirst().orElse(null);
+
+            if (dto != null) {
+                resultMap.get(dto).add(item);
+            }
+        }
+
+        resultMap.forEach((dto, items) -> dto.setItems(
+                items.stream()
+                        .map(ItemRequestMapper::toItemRequestResponseDtoItem)
+                        .collect(Collectors.toList())
+        ));
+
+        return new ArrayList<>(resultMap.keySet());
     }
 
     private List<ItemRequestResponseDto> getItemRequestResponseDtos(List<Item> itemList, List<ItemRequestResponseDto> result) {
@@ -81,22 +103,24 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         int offset = from > 0 ? from / size : 0;
         PageRequest page = PageRequest.of(offset, size);
 
-        Page<ItemRequest> itemRequestList = itemRequestRepository.findByOrderByCreatedDesc(page);
+        Page<ItemRequest> itemRequestPage = itemRequestRepository.findByOrderByCreatedDesc(page);
 
-        List<Long> requestIds = itemRequestList.stream()
+        List<Long> requestIds = itemRequestPage.getContent().stream()
                 .map(ItemRequest::getId)
                 .collect(Collectors.toList());
 
-        List<Item> itemList = itemRepository.findItemsByRequestIdIn(requestIds); // все вещи по запросу
+        List<Item> itemList = itemRepository.findItemsByRequestIdIn(requestIds);
 
-        var result = itemRequestList.stream()
+        Map<ItemRequestResponseDto, List<Item>> resultMap = new HashMap<>();
+
+        for (ItemRequestResponseDto dto : itemRequestPage.getContent().stream()
                 .map(ItemRequestMapper::toItemRequestResponseDto)
-                .collect(Collectors.toList());
-        result = result.stream()
                 .filter(item -> item.getId() != userId)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())) {
+            resultMap.put(dto, new ArrayList<>());
+        }
 
-        return getItemRequestResponseDtos(itemList, result);
+        return getItemRequestResponseDtos(itemList, resultMap);
     }
 
     @Override
@@ -116,6 +140,5 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         return result;
     }
-
 
 }
