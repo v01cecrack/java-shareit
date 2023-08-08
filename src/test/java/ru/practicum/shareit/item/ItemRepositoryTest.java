@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dao.UserRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -18,9 +19,13 @@ class ItemRepositoryTest {
     @Autowired
     private ItemRepository itemRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
     void search_ReturnsMatchingItems() {
         User owner = User.builder().id(1).name("kostya").email("kostya@mail.ru").build();
+        userRepository.save(owner);
         Item item = Item.builder().id(1)
                 .name("Item 1")
                 .description("description")
