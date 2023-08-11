@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.error.ObjectNotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
@@ -42,7 +41,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         return ItemRequestMapper.toItemRequestDto(itemRequest);
     }
-
 
     @Override
     public List<ItemRequestResponseDto> getItemsRequests(int userId) {
@@ -82,7 +80,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestResponseDto> getAllRequests(int userId, int from, int size) {
         int offset = from > 0 ? from / size : 0;
-        PageRequest page = PageRequest.of(offset, size, Sort.by(Sort.Order.desc("created")));
+        PageRequest page = PageRequest.of(offset, size);
 
         Page<ItemRequest> itemRequestPage = itemRequestRepository.findByOrderByCreatedDesc(page);
 
@@ -114,7 +112,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return result;
     }
 
-
     @Override
     public ItemRequestResponseDto getRequestById(int userId, long requestId) {
         userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Пользователь с id %d не найден"));
@@ -132,6 +129,5 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         return result;
     }
-
 
 }
