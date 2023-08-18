@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
@@ -18,17 +19,23 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dao.UserRepository;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.item.dto.ItemMapper.toItem;
 import static ru.practicum.shareit.item.dto.ItemMapper.toItemDto;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
@@ -36,6 +43,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
 
     @Override
@@ -43,15 +51,20 @@ public class ItemServiceImpl implements ItemService {
         validateItem(userId, itemDto);
         User user = userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Пользователь не найден"));
         Item item = toItem(itemDto, user);
+        if (itemDto.getRequestId() > 0) {
+            itemRequestRepository.findById(itemDto.getRequestId())
+                    .ifPresentOrElse(item::setRequest, () -> {
+                        throw new ObjectNotFoundException("Такого запроса не существует!");
+                    });
+        }
         itemRepository.save(item);
         itemDto = toItemDto(item);
         return itemDto;
     }
 
     @Override
-    public ItemDto editItem(ItemDto itemDto, Integer userId, Integer itemId) {
-        itemDto.setId(itemId);
-        Item oldItem = itemRepository.findById(itemId).orElseThrow(() -> new ObjectNotFoundException("Вещь не найдена"));
+    public ItemDto editItem(ItemDto itemDto, Integer userId) {
+        Item oldItem = itemRepository.findById(itemDto.getId()).orElseThrow(() -> new ObjectNotFoundException("Вещь не найдена"));
         if (!(oldItem.getOwner().getId() == userId)) {
             throw new ObjectNotFoundException("User is not found");
         }
@@ -90,9 +103,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItems(Integer userId) {
+    public List<ItemDto> getItems(Integer userId, int from, int size) {
         List<ItemDto> itemDtos = new ArrayList<>();
-        List<Item> items = itemRepository.findItemByOwnerId(userId);
+        int offset = from > 0 ? from / size : 0;
+        PageRequest page = PageRequest.of(offset, size);
+        List<Item> items = itemRepository.findItemByOwnerIdOrderById(userId, page).toList();
 
         items = items.stream()
                 .sorted(Comparator.comparingInt(Item::getId))
@@ -140,13 +155,23 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItems(String text) {
-        if (text.isEmpty()) {
-            return Collections.emptyList();
+    public List<ItemDto> searchItems(String text, int from, int size) {
+        int offset = from > 0 ? from / size : 0;
+        PageRequest page = PageRequest.of(offset, size);
+
+        List<ItemDto> itemDtos = new ArrayList<>();
+        if (text.isBlank()) {
+            return itemDtos;
         }
-        return itemRepository.search(text).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        List<Item> items = itemRepository.search(text, page).toList();
+
+        for (Item item : items) {
+            if (item.getAvailable()) {
+                itemDtos.add(ItemMapper.toItemDto(item));
+            }
+        }
+
+        return itemDtos;
     }
 
     @Override

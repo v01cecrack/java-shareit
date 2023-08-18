@@ -8,6 +8,7 @@ import javax.persistence.*;
  * TODO Sprint add-controllers.
  */
 @ToString
+@EqualsAndHashCode
 @Getter
 @Setter
 @AllArgsConstructor

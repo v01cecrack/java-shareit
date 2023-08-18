@@ -8,10 +8,13 @@ import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
@@ -23,25 +26,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getUsers() {
+
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void deleteUser(int userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ObjectNotFoundException("Такой пользователь не существует!");
+        }
         userRepository.deleteById(userId);
     }
 
     @Override
-    public User getUser(int userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("no user with such id"));
+    public UserDto getUser(int userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Такой пользователь не существует!"));
+        return UserMapper.toUserDto(user);
     }
 
     @Override
-    public UserDto updateUser(int userId, UserDto userDto) {
+    public UserDto updateUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
-        user.setId(userId);
-        User obj = userRepository.findById(userId).get();
+        User obj = userRepository.findById(user.getId()).orElseThrow(() -> new ObjectNotFoundException("Такой пользователь не существует!"));
         Optional.ofNullable(user.getName()).ifPresent(obj::setName);
         Optional.ofNullable(user.getEmail()).ifPresent(obj::setEmail);
         return UserMapper.toUserDto(userRepository.save(obj));
