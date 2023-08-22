@@ -30,7 +30,7 @@ public class UserClient extends BaseClient {
         return post("", userDto);
     }
 
-    public ResponseEntity<Object> updateUser(UserDto userDto){
+    public ResponseEntity<Object> updateUser(UserDto userDto) {
         return patch("/" + userDto.getId(), userDto);
     }
 
