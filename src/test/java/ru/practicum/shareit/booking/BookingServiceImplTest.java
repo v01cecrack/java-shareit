@@ -138,7 +138,6 @@ class BookingServiceImplTest {
     }
 
 
-
     @Test
     void approveBooking() {
         int bookingId = bookingDto.getId();
@@ -355,7 +354,6 @@ class BookingServiceImplTest {
         verify(userRepository).findById(userId);
         verify(bookingRepository, never()).findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(anyInt(), any(LocalDateTime.class), any(PageRequest.class));
     }
-
 
 
 }

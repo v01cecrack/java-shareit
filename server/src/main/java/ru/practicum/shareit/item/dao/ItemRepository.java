@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface ItemRepository extends JpaRepository<Item, Integer> {
     Page<Item> findItemByOwnerIdOrderById(int ownerId, Pageable pageable);
+
     List<Item> findItemByOwnerId(int ownerId);
 
     @Query("select ie from Item ie " +
