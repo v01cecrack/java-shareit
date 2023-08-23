@@ -53,7 +53,7 @@ public class BookingController {
     public List<BookingDto> getBookingByItemOwner(@RequestHeader(ItemController.HEADER) int userId,
                                                   @RequestParam(defaultValue = "ALL") State state,
                                                   @RequestParam(defaultValue = "0") Integer from,
-                                                  @RequestParam(defaultValue = "20") Integer size) {
+                                                  @RequestParam(defaultValue = "10") Integer size) {
 //        State stateEnum = getState(state);
         return bookingService.getBookingByItemOwner(userId, state, from, size);
     }
