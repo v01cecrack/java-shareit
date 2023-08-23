@@ -18,7 +18,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse hadleObjectNotFoundException(ObjectNotFoundException e) {
+    public ErrorResponse handleObjectNotFoundException(ObjectNotFoundException e) {
         log.error("{}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }

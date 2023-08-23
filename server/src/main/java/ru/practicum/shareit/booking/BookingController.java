@@ -42,20 +42,20 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getBookingsOfUser(@RequestHeader(ItemController.HEADER) int userId,
-                                              @RequestParam(defaultValue = "ALL") String state,
+                                              @RequestParam(defaultValue = "ALL") State state,
                                               @RequestParam(defaultValue = "0") Integer from,
-                                              @RequestParam(defaultValue = "20") Integer size) {
-        State stateEnum = getState(state);
-        return bookingService.getBookingList(stateEnum, userId, from, size);
+                                              @RequestParam(defaultValue = "10") Integer size) {
+//        State stateEnum = getState(state);
+        return bookingService.getBookingList(state, userId, from, size);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getBookingByItemOwner(@RequestHeader(ItemController.HEADER) int userId,
-                                                  @RequestParam(defaultValue = "ALL") String state,
+                                                  @RequestParam(defaultValue = "ALL") State state,
                                                   @RequestParam(defaultValue = "0") Integer from,
                                                   @RequestParam(defaultValue = "20") Integer size) {
-        State stateEnum = getState(state);
-        return bookingService.getBookingByItemOwner(userId, stateEnum, from, size);
+//        State stateEnum = getState(state);
+        return bookingService.getBookingByItemOwner(userId, state, from, size);
     }
 
     private State getState(String state) {
@@ -64,7 +64,7 @@ public class BookingController {
             stateEnum = State.valueOf(state);
 
         } catch (Exception ex) {
-            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+            throw new ValidationException("UnknownNNN state: UNSUPPORTED_STATUS");
         }
         return stateEnum;
     }
