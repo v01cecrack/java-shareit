@@ -79,7 +79,7 @@ public class BookingController {
             stateEnum = BookingState.valueOf(state);
 
         } catch (Exception ex) {
-            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+            throw new IllegalArgumentException("Unknown state: UNSUPPORTED_STATUS");
         }
         return stateEnum;
     }

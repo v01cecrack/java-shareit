@@ -36,4 +36,11 @@ public class ErrorHandler {
         log.error("{}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
+        log.debug("ResponseStatus: INTERNAL_SERVER_ERROR. Status code: 500 {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
 }
