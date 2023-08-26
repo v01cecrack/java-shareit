@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.error.ValidationException;
 import ru.practicum.shareit.item.ItemController;
 
 import java.util.List;
@@ -45,7 +44,6 @@ public class BookingController {
                                               @RequestParam(defaultValue = "ALL") State state,
                                               @RequestParam(defaultValue = "0") Integer from,
                                               @RequestParam(defaultValue = "10") Integer size) {
-//        State stateEnum = getState(state);
         return bookingService.getBookingList(state, userId, from, size);
     }
 
@@ -54,18 +52,7 @@ public class BookingController {
                                                   @RequestParam(defaultValue = "ALL") State state,
                                                   @RequestParam(defaultValue = "0") Integer from,
                                                   @RequestParam(defaultValue = "10") Integer size) {
-//        State stateEnum = getState(state);
         return bookingService.getBookingByItemOwner(userId, state, from, size);
     }
 
-    private State getState(String state) {
-        State stateEnum;
-        try {
-            stateEnum = State.valueOf(state);
-
-        } catch (Exception ex) {
-            throw new ValidationException("UnknownNNN state: UNSUPPORTED_STATUS");
-        }
-        return stateEnum;
-    }
 }
