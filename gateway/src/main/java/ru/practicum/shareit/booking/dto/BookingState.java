@@ -14,4 +14,14 @@ public enum BookingState {
     // Ожидающие подтверждения
     WAITING;
 
+    public static BookingState getState(String state) {
+        BookingState stateEnum;
+        try {
+            stateEnum = BookingState.valueOf(state);
+
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Unknown state: " + state);
+        }
+        return stateEnum;
+    }
 }
