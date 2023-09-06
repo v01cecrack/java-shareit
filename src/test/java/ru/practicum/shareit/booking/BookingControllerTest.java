@@ -78,7 +78,7 @@ class BookingControllerTest {
 
     @SneakyThrows
     @Test
-    void addBookingRequest(){
+    void addBookingRequest() {
         when(bookingService.createBooking(any(BookingDto.class), anyInt())).thenReturn(bookingDto);
         String contentAsString = mockMvc.perform(post("/bookings")
                         .contentType(MediaType.APPLICATION_JSON)

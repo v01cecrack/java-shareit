@@ -6,8 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -24,9 +22,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -136,7 +132,6 @@ class BookingServiceImplTest {
         verify(bookingRepository, never()).save(any());
 
     }
-
 
 
     @Test
@@ -355,7 +350,6 @@ class BookingServiceImplTest {
         verify(userRepository).findById(userId);
         verify(bookingRepository, never()).findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(anyInt(), any(LocalDateTime.class), any(PageRequest.class));
     }
-
 
 
 }
